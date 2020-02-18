@@ -6,8 +6,13 @@ This is a project to control an electric wheelchair with custom controllers.
 Project parts:
 - Electronics connecting to wheelchair
 - BLE-enabled Arduino driving the electronics
-
-The code is tested on laptop running Ubuntu 19.10, python 3.7.5 and bluez 5.50.
+- Computer with software which handles:
+  - BLE connection to Arduino
+  - Connection to controller
+  - Visualizing controller working principles
+  - Visualizing commands sent to wheelchair
+- Custom controller(s)
+  - Cap with eye-tracking camera
 
 Requirements
 ------------
