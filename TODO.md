@@ -3,6 +3,7 @@ Electronics
 ===========
 - Create 6V ref voltage without arduino before it boots
 - Add emergency stop button
+- Move electronics from breadboard to PCB
 
 Arduino code
 ============
@@ -30,3 +31,4 @@ Wheelchair controller
 Other
 =====
 - Design holder for laptop
+- Design encapsulation for the electronics
