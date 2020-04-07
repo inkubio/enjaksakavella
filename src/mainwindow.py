@@ -37,9 +37,9 @@ class MainWindow(QMainWindow):
 
         # Choose wheelchair controller from one of these
         self.wheelchairs = []
-        self.wheelchairs.append(WheelchairDummy)
-        self.wheelchairs.append(WheelchairBluetooth)
-        self.wheelchair = self.wheelchairs[0]()
+        self.wheelchairs.append(WheelchairDummy())
+        self.wheelchairs.append(WheelchairBluetooth())
+        self.wheelchair = self.wheelchairs[0]
         self.wheelchair_widget = WheelchairWidget(self.wheelchair)
 
         # Choose controller from one of these
@@ -84,15 +84,15 @@ class MainWindow(QMainWindow):
     @Slot(int)
     def set_wheelchair(self, num):
         """Change wheelchair connection adapter.
-        
+
         When adapter is changed, reset controller to the simple
         keyboard-based controller.
-        
+
         Arguments:
         num -- Index of wheelchair adapter selected.
         """
         self.wheelchair_chooser.clearFocus()
-        self.wheelchair = self.wheelchairs[num]()
+        self.wheelchair = self.wheelchairs[num]
         widget = WheelchairWidget(self.wheelchair)
         self.sub_layout.replaceWidget(self.wheelchair_widget, widget)
         self.wheelchair_widget.deleteLater()
@@ -105,7 +105,7 @@ class MainWindow(QMainWindow):
     @Slot(int)
     def set_controller(self, num):
         """Change wheelchair controller.
-        
+
         Arguments:
         num -- Index of wheelchair controller selected.
         """
