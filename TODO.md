@@ -24,7 +24,7 @@ Keyboard Controller
 
 Wheelchair controller
 ---------------------
-- Fix connecting with BLE to be non-blocking (more to seperate thread?)
+- Improve BLE controlling code
 - Add always-working emergency stop key (space bar?)
 - Add serial controller for wheelchair
 
