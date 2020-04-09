@@ -6,6 +6,8 @@ instead of sending them over bluetooth to receiver.
 import time
 from wheelchair_base import WheelchairController
 
+from util import ConnectionState
+
 class WheelchairDummy(WheelchairController):
     """Dummy wheelchair controller.
 
@@ -17,10 +19,10 @@ class WheelchairDummy(WheelchairController):
         return 'Dummy wheelchair'
 
     def connect_chair(self):
-        self.set_connection_status(True)
+        self.set_connection_status(ConnectionState.CONNECTED)
 
     def disconnect_chair(self):
-        self.set_connection_status(False)
+        self.set_connection_status(ConnectionState.DISCONNECTED)
 
     def write(self):
         """

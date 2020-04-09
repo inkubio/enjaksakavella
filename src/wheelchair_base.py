@@ -9,6 +9,8 @@ TODO:
 #import json
 from PySide2.QtCore import QObject, Signal, Slot
 
+from util import ConnectionState
+
 class WheelchairController(QObject):
     """Base class defining wheelchair controller
 
@@ -31,7 +33,7 @@ class WheelchairController(QObject):
         self.enable_turn = False
 
         self.prev_write = 0
-        self.connected = False
+        self.connected = ConnectionState.DISCONNECTED
 
     def __str__(self):
         pass
@@ -48,7 +50,7 @@ class WheelchairController(QObject):
         *args -- Empty if used to toggle value.
         args[0] -- Enable/disable movement forward/backward (bool).
         """
-        if not self.connected:
+        if self.connected != ConnectionState.CONNECTED:
             return
         if args:
             value = args[0]
@@ -70,7 +72,7 @@ class WheelchairController(QObject):
         *args -- Empty if used to toggle value.
         args[0] -- Enable/disable turning the wheelchair (bool).
         """
-        if not self.connected:
+        if self.connected != ConnectionState.CONNECTED:
             return
         if args:
             value = args[0]
@@ -125,7 +127,7 @@ class WheelchairController(QObject):
         self.drive = self._transform_input(forward)
         self.turn = self._transform_input(turn)
 
-        if self.connected:
+        if self.connected == ConnectionState.CONNECTED:
             self.write()
 
     @staticmethod

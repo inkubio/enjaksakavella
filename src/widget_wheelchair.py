@@ -1,7 +1,9 @@
 """Qt ui widget for wheelchair controllers."""
 from PySide2.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton
-from PySide2.QtGui import QPainter, QColor, QPixmap
-from PySide2.QtCore import Slot
+from PySide2.QtGui import QPainter, QColor, QPixmap, QMovie
+from PySide2.QtCore import Slot, QSize
+
+from util import ConnectionState
 
 NEUTRAL = 127   #112
 
@@ -71,6 +73,9 @@ class WheelchairWidget(QWidget):
 
         self.enabled = QPixmap('./resources/enabled.png').scaled(24, 24)
         self.disabled = QPixmap('./resources/disabled.png').scaled(24, 24)
+        self.connecting = QMovie("./resources/blinking.gif")
+        self.connecting.setScaledSize(QSize(24, 24))
+        self.connecting.start()
 
         self.drive_label = QLabel()
         self.turn_label = QLabel()
@@ -122,13 +127,18 @@ class WheelchairWidget(QWidget):
         else:
             self.turn_enable.setText('Enable turn')
             self.turn_label.setPixmap(self.disabled)
-
+s
     @Slot()
     def set_connect(self):
-        """Set connect button."""
-        if self.wheelchair.connected:
+        """Set the connect button"""
+        if self.wheelchair.connected == ConnectionState.CONNECTED:
             self.connect_label.setPixmap(self.enabled)
             self.connect_button.setText('Disconnect')
+        elif self.wheelchair.connected == ConnectionState.CONNECTING:
+            #self.connect_label.setPixmap(self.disabled)
+            self.connect_label.setMovie(self.connecting)
+            #self.connecting.start()
+            self.connect_button.setText('Connecting...')
         else:
             self.connect_label.setPixmap(self.disabled)
             self.connect_button.setText('Connect')
@@ -136,8 +146,10 @@ class WheelchairWidget(QWidget):
     @Slot()
     def toggle_connection(self):
         """Connect or disconnect wheelchair based on connection status."""
-        if self.wheelchair.connected:
+        if self.wheelchair.connected == ConnectionState.CONNECTED:
             self.wheelchair.disconnect_chair()
+        elif self.wheelchair.connected == ConnectionState.CONNECTING:
+            pass
         else:
             self.wheelchair.connect_chair()
 

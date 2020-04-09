@@ -27,17 +27,17 @@ class WheelchairBluetooth(WheelchairController):
     depends on physical system connected to wheelchair.
     """
 
-    name = 'Bluetooth wheelchair'
+    name = "Bluetooth wheelchair"
 
     def __init__(self):
         super().__init__()
 
-        with open('./resources/config_bt.JSON') as config_file:
+        with open("resources/config_bt.JSON") as config_file:
             config = json.load(config_file)
 
             self.adapter = config["adapter"]
-            self.address = config['address']
-            self.uuid = config['characteristic']
+            self.address = config["address"]
+            self.uuid = config["characteristic"]
             #self.neutral = int(config['neutral'])
             self.neutral = 0
 

@@ -8,9 +8,11 @@ import gi.repository
 
 from PySide2.QtCore import Slot, Signal, QObject
 
+from util import ConnectionState
+
 class BluezDBus(QObject):
     """Class to manage bluetooth connection to wheelchair."""
-    connection_status = Signal(bool)
+    connection_status = Signal(ConnectionState)
 
     def __init__(self, bt_adapter, bt_address, bt_uuid):
         super().__init__()
@@ -42,7 +44,7 @@ class BluezDBus(QObject):
                 self.managed_objects.keys()
             ))
 
-        self.connected = False
+        self.connected = ConnectionState.DISCONNECTED
 
     def __del__(self):
         """Disconnect wheelchair when closing program.
@@ -50,18 +52,39 @@ class BluezDBus(QObject):
         TODO: Delete extra dbus objects, too?
         """
         self.bt_disconnect()
+        #self._clear_dbus()
 
     def _get_characteristic_by_uuid(self):
         """Get BLE characteristic's DBus location."""
         uuid = self.uuid.lower()
+        while True:
+            self.managed_objects = self.bluez.GetManagedObjects()
+            for key in self.managed_objects:
+                if key.startswith(self.dbus_device):
+                    dbus_object = self.system_bus.get("org.bluez", key)
+                    try:
+                        if dbus_object.UUID == uuid:
+                            return key
+                    except AttributeError as err:
+                        test_str = "'<CompositeObject>' object has no attribute 'UUID'"
+                        if str(err) == test_str:
+                            pass
+                            #print("uuid not found, passing error.")
+                        else:
+                            raise
+
+    def _clear_dbus(self):
+        """Clear saved Bluetooth connection to Arduino from operating system
+        
+        Use this to test establishing connection for the first time without
+        restarting computer.
+        """
+
         for key in self.managed_objects:
             if key.startswith(self.dbus_device):
-                dbus_object = self.system_bus.get("org.bluez", key)
-                try:
-                    if dbus_object.UUID == uuid:
-                        return key
-                except AttributeError:
-                    pass
+                self.hci0.RemoveDevice(key)
+                # Removing the top level DBus item removes the others too.
+                break
 
     def _set_device(self):
         """Set DBus address for wheelchair's BLE device."""
@@ -80,10 +103,12 @@ class BluezDBus(QObject):
     @Slot()
     def bt_connect(self):
         """Establish connection with wheelchair."""
+        self.connected = ConnectionState.CONNECTING
+        self.connection_status.emit(self.connected)
         self._find_wheelchair()
         self._set_device()
         self._connect_wheelchair()
-        self.connected = True
+        self.connected = ConnectionState.CONNECTED
         self._set_characteristic()
         self.connection_status.emit(self.connected)
 
@@ -91,15 +116,23 @@ class BluezDBus(QObject):
     def bt_disconnect(self):
         """Disconnect wheelchair."""
         self.device.Disconnect()
-        self.connected = False
+        self.connected = ConnectionState.DISCONNECTED
         self.connection_status.emit(self.connected)
 
     def _find_wheelchair(self):
-        """Search for wheelchair with BLE scan."""
+        """Search for wheelchair with BLE scan.
+        
+        TODO: Improve exception handling
+        gi.repository.GLib.GError: g-io-error-quark: \
+            GDBus.Error:org.bluez.Error.InProgress: Operation already in progress (36)
+        """
         while self.dbus_device not in self.bt_devices:
-            self.hci0.StartDiscovery()
-            time.sleep(10)
-            self.hci0.StopDiscovery()
+            try:
+                self.hci0.StartDiscovery()
+            except gi.repository.GLib.GError:
+                pass
+            time.sleep(5)
+            #self.hci0.StopDiscovery()
             self.managed_objects = self.bluez.GetManagedObjects()
             self.bt_devices = list(
                 filter(
@@ -110,7 +143,7 @@ class BluezDBus(QObject):
     def _connect_wheelchair(self):
         """Establish bt connection with wheelchair.
 
-        TODO: Improve error handling. Currently only ignores them.
+        TODO: Improve exception handling. Currently only ignores them.
         https://pygobject.readthedocs.io/en/latest/guide/api/error_handling.html
         Errors to handle:
         Connecting fails after timeout:
@@ -137,7 +170,7 @@ class BluezDBus(QObject):
             g-io-error-quark: GDBus.Error:org.bluez.Error.Failed: \
                 Not connected (36)
         """
-        if not self.connected:
+        if self.connected != ConnectionState.CONNECTED:
             return
         try:
             self.characteristic.WriteValue(cmd, {})
