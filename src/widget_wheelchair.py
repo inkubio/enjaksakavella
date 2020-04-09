@@ -127,7 +127,7 @@ class WheelchairWidget(QWidget):
         else:
             self.turn_enable.setText('Enable turn')
             self.turn_label.setPixmap(self.disabled)
-s
+            
     @Slot()
     def set_connect(self):
         """Set the connect button"""
