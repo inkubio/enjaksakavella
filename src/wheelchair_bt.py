@@ -42,6 +42,7 @@ class WheelchairBluetooth(WheelchairController):
             self.neutral = 0
 
         self.bluetooth = BluezDBus(self.adapter, self.address, self.uuid)
+        self.bluetooth.setParent(self)
 
         self.bluetooth.connection_status.connect(self.set_connection_status)
 

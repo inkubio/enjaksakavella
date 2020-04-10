@@ -115,7 +115,8 @@ class BluezDBus(QObject):
     @Slot()
     def bt_disconnect(self):
         """Disconnect wheelchair."""
-        self.device.Disconnect()
+        if self.device:
+            self.device.Disconnect()
         self.connected = ConnectionState.DISCONNECTED
         self.connection_status.emit(self.connected)
 
