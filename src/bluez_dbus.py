@@ -10,7 +10,7 @@ from PySide2.QtCore import Slot, Signal, QObject
 
 from util import ConnectionState
 
-class BluezDBus(QObject):
+class BLEHelper(QObject):
     """Class to manage bluetooth connection to wheelchair."""
     connection_status = Signal(ConnectionState)
 
@@ -66,10 +66,10 @@ class BluezDBus(QObject):
                         if dbus_object.UUID == uuid:
                             return key
                     except AttributeError as err:
-                        test_str = "'<CompositeObject>' object has no attribute 'UUID'"
+                        test_str = ("'<CompositeObject>' "
+                                    "object has no attribute 'UUID'")
                         if str(err) == test_str:
                             pass
-                            #print("uuid not found, passing error.")
                         else:
                             raise
 
@@ -102,7 +102,10 @@ class BluezDBus(QObject):
 
     @Slot()
     def bt_connect(self):
-        """Establish connection with wheelchair."""
+        """Establish connection with wheelchair.
+        
+        TODO: Explore ConnectProfile(string uuid) instead of Connect()
+        """
         self.connected = ConnectionState.CONNECTING
         self.connection_status.emit(self.connected)
         self._find_wheelchair()
@@ -121,17 +124,18 @@ class BluezDBus(QObject):
         self.connection_status.emit(self.connected)
 
     def _find_wheelchair(self):
-        """Search for wheelchair with BLE scan.
-        
-        TODO: Improve exception handling
-        gi.repository.GLib.GError: g-io-error-quark: \
-            GDBus.Error:org.bluez.Error.InProgress: Operation already in progress (36)
-        """
+        """Search for wheelchair with BLE scan."""
         while self.dbus_device not in self.bt_devices:
             try:
                 self.hci0.StartDiscovery()
-            except gi.repository.GLib.GError:
-                pass
+            except gi.repository.GLib.GError as err:
+                error_text = ("g-io-error-quark: "
+                              "GDBus.Error:org.bluez.Error.InProgress: "
+                              "Operation already in progress (36)")
+                if str(err) == error_text:
+                    pass
+                else:
+                    raise
             time.sleep(5)
             #self.hci0.StopDiscovery()
             self.managed_objects = self.bluez.GetManagedObjects()
@@ -145,21 +149,24 @@ class BluezDBus(QObject):
         """Establish bt connection with wheelchair.
 
         TODO: Improve exception handling. Currently only ignores them.
-        https://pygobject.readthedocs.io/en/latest/guide/api/error_handling.html
-        Errors to handle:
-        Connecting fails after timeout:
-            g-io-error-quark: GDBus.Error:org.bluez.Error.Failed: \
-                Software caused connection abort (36)
-        Trying to connect again while already trying to connect:
-            g-io-error-quark: GDBus.Error:org.bluez.Error.Failed: \
-                Operation already in progress (36)
         """
         while True:
             try:
                 self.device.Connect()
                 break
-            except gi.repository.GLib.Error:
-                pass
+            except gi.repository.GLib.Error as err:
+                err_timeout = ("g-io-error-quark: "
+                               "GDBus.Error:org.bluez.Error.Failed: "
+                               "Software caused connection abort (36)")
+                err_connect_again = ("g-io-error-quark: "
+                                     "GDBus.Error:org.bluez.Error.Failed: "
+                                     "Operation already in progress (36)")
+                if str(err) == err_timeout:
+                    pass
+                elif str(err) == err_connect_again:
+                    pass
+                else:
+                    raise
 
     @Slot()
     def write_characteristic(self, cmd):
@@ -175,5 +182,14 @@ class BluezDBus(QObject):
             return
         try:
             self.characteristic.WriteValue(cmd, {})
-        except gi.repository.GLib.Error:
-            pass
+        except gi.repository.GLib.Error as err:
+            err_connection_broken = ("g-io-error-quark: "
+                                     "GDBus.Error:org.bluez.Error.Failed: "
+                                     "Not connected (36)")
+            if str(err) == err_connection_broken:
+                # What should we do here? try to reconnect?
+                print("Connection broken while trying to write to device.")
+                print("Reconnecting...")
+                self.bt_connect()
+            else:
+                raise
