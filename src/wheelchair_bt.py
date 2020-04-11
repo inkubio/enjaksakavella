@@ -7,13 +7,17 @@ TODO:
         wheelchair connection.
 """
 
+import sys
 import time
 import threading
 import json
 
 from wheelchair_base import WheelchairController
 
-from bluez_dbus import BluezDBus
+if sys.platform.startswith("linux"):
+    from bluez_dbus import BLEHelper
+elif sys.platform.startswith("win"):
+    from win_bt import BLEHelper
 
 class WheelchairBluetooth(WheelchairController):
     """Bluetooth LE adapter for controlling the wheelchair.
@@ -41,7 +45,7 @@ class WheelchairBluetooth(WheelchairController):
             #self.neutral = int(config['neutral'])
             self.neutral = 0
 
-        self.bluetooth = BluezDBus(self.adapter, self.address, self.uuid)
+        self.bluetooth = BLEHelper(self.adapter, self.address, self.uuid)
         self.bluetooth.setParent(self)
 
         self.bluetooth.connection_status.connect(self.set_connection_status)
