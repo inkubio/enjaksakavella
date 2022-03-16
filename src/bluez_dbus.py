@@ -16,6 +16,8 @@ class BLEHelper(QObject):
 
     def __init__(self, bt_adapter, bt_address, bt_uuid):
         super().__init__()
+        self.stop_thread = False
+        
         self.bt_adapter = bt_adapter
         self.bt_address = bt_address
         self.uuid = bt_uuid
@@ -51,7 +53,7 @@ class BLEHelper(QObject):
 
         TODO: Delete extra dbus objects, too?
         """
-        self.bt_disconnect()
+        #self.bt_disconnect()
         #self._clear_dbus()
 
     def _get_characteristic_by_uuid(self):
@@ -108,9 +110,15 @@ class BLEHelper(QObject):
         """
         self.connected = ConnectionState.CONNECTING
         self.connection_status.emit(self.connected)
-        self._find_wheelchair()
+        if self._find_wheelchair():
+            # If the application is closed before the wheelchair can be found
+            self.connected = ConnectionState.DISCONNECTED
+            return
         self._set_device()
-        self._connect_wheelchair()
+        if self._connect_wheelchair():
+            # If the application is closed while connecting
+            self.connected = ConnectionState.DISCONNECTED
+            return
         self.connected = ConnectionState.CONNECTED
         self._set_characteristic()
         self.connection_status.emit(self.connected)
@@ -125,7 +133,7 @@ class BLEHelper(QObject):
 
     def _find_wheelchair(self):
         """Search for wheelchair with BLE scan."""
-        while self.dbus_device not in self.bt_devices:
+        while not self.stop_thread and self.dbus_device not in self.bt_devices:
             try:
                 self.hci0.StartDiscovery()
             except gi.repository.GLib.GError as err:
@@ -136,7 +144,7 @@ class BLEHelper(QObject):
                     pass
                 else:
                     raise
-            time.sleep(5)
+            time.sleep(1)
             #self.hci0.StopDiscovery()
             self.managed_objects = self.bluez.GetManagedObjects()
             self.bt_devices = list(
@@ -145,12 +153,14 @@ class BLEHelper(QObject):
                     self.managed_objects.keys()
                 ))
 
+        return self.stop_thread
+
     def _connect_wheelchair(self):
         """Establish bt connection with wheelchair.
 
         TODO: Improve exception handling. Currently only ignores them.
         """
-        while True:
+        while not self.stop_thread:
             try:
                 self.device.Connect()
                 break
@@ -167,6 +177,8 @@ class BLEHelper(QObject):
                     pass
                 else:
                     raise
+
+        return self.stop_thread
 
     @Slot()
     def write_characteristic(self, cmd):
