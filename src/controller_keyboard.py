@@ -4,7 +4,7 @@ This controller is for testing purposes to send reliably commands to
 the wheelchair.
 """
 
-from PySide2.QtCore import Qt
+from PySide2.QtCore import Qt, QTimer
 from PySide2.QtGui import QPixmap, QTransform
 from PySide2.QtWidgets import QWidget, QLabel, QGridLayout
 
@@ -32,6 +32,13 @@ class KeyboardController(QWidget):
         # Variables for keypresses
         self.first_release = True
         self.keylist = []
+
+        self.release_timer = QTimer()
+        self.release_timer.start(100)
+        self.release_timer.timeout.connect(self._release_keys)
+
+    def _release_keys(self):
+        self.processmultikeys(self.keylist)
 
     def init_ui(self):
         """Initialize the user interface.
@@ -76,6 +83,7 @@ class KeyboardController(QWidget):
         self.keylist.append(event.key())
 
     def keyReleaseEvent(self, _):
+        print("keyreleaseevent")
         if self.first_release:
             self.processmultikeys(self.keylist)
 

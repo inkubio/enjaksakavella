@@ -50,17 +50,13 @@ class WheelchairBluetooth(WheelchairController):
 
         self.bluetooth.connection_status.connect(self.set_connection_status)
 
-        #self.target = None
-        self.t = None
-
     def __del__(self):
         self.bluetooth.stop_thread = True
 
     def connect_chair(self):
-        self.t = threading.Thread(
+        threading.Thread(
             target = self.bluetooth.bt_connect
-            )
-        self.t.start()
+            ).start()
 
     def disconnect_chair(self):
         threading.Thread(
