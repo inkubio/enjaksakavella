@@ -98,6 +98,7 @@ Using a laptop with linux and BLE-capable bluetooth
 2. Turn on the wheelchair from RNET OMNI
 3. Set control program to 3 from RNET OMNI
 4. Run `main.py` in `src` folder
+  - You may need to specify using Wayland on newer OS versions: `python main.py -platform wayland`
 5. Select Bluetooth wheelchair and click connect
 6. Select your favourite controller from the GUI
 7. Enable desired movement(s) from the GUI
