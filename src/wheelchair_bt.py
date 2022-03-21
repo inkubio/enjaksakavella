@@ -12,6 +12,8 @@ import time
 import threading
 import json
 
+from PySide2.QtCore import Qt, QTimer
+
 from wheelchair_base import WheelchairController
 
 if sys.platform.startswith("linux"):
@@ -50,6 +52,11 @@ class WheelchairBluetooth(WheelchairController):
 
         self.bluetooth.connection_status.connect(self.set_connection_status)
 
+        self.cmd_timer = QTimer()
+        self.cmd_timer.setInterval(50)
+        self.cmd_timer.timeout.connect(self.write)
+
+
     def __del__(self):
         self.bluetooth.stop_thread = True
 
@@ -84,18 +91,18 @@ class WheelchairBluetooth(WheelchairController):
             was not sent because too little time has passed since
             previous command.
         """
-        command_delay_ms = 200
-        diff = int(time.monotonic()*1000) - self.prev_write
-        if diff > command_delay_ms:
-            self.prev_write = int(time.monotonic()*1000)
-            cmd = [self.drive, self.turn]
+        #command_delay_ms = 100  #100
+        #diff = int(time.monotonic()*1000) - self.prev_write
+        #if diff > command_delay_ms:
+            #self.prev_write = int(time.monotonic()*1000)
+        cmd = [self.drive, self.turn]
 
-            self.command_changed.emit(self.drive, self.turn)
+        self.command_changed.emit(self.drive, self.turn)
 
-            self.drive = self.neutral
-            self.turn = self.neutral
+        self.drive = self.neutral
+        self.turn = self.neutral
 
-            self.bluetooth.write_characteristic(cmd)
+        self.bluetooth.write_characteristic(cmd)
 
-            return True
-        return False
+        #return True
+        #return False

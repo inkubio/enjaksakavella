@@ -2,6 +2,7 @@
 
 import time
 import re
+import threading
 
 import pydbus
 import gi.repository
@@ -39,7 +40,7 @@ class BLEHelper(QObject):
         self.dbus_characteristic = None
         self.characteristic = None
 
-        self.dev_pattern = re.compile("/org/bluez/hci0/dev_*")
+        self.dev_pattern = re.compile(self.dbus_adapter + "/dev_*")
         self.bt_devices = list(
             filter(
                 self.dev_pattern.match,
@@ -47,6 +48,8 @@ class BLEHelper(QObject):
             ))
 
         self.connected = ConnectionState.DISCONNECTED
+
+        self.cmd_thread = None
 
     def __del__(self):
         """Disconnect wheelchair when closing program.
@@ -193,7 +196,9 @@ class BLEHelper(QObject):
         if self.connected != ConnectionState.CONNECTED:
             return
         try:
-            self.characteristic.WriteValue(cmd, {})
+            if self.cmd_thread == None or not self.cmd_thread.is_alive():
+                self.cmd_thread = threading.Thread(target=self.characteristic.WriteValue, args=[cmd, {}])
+                self.cmd_thread.start()
         except gi.repository.GLib.Error as err:
             err_connection_broken = ("g-io-error-quark: "
                                      "GDBus.Error:org.bluez.Error.Failed: "
