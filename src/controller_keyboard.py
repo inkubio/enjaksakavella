@@ -34,10 +34,10 @@ class KeyboardController(QWidget):
         self.keylist = []
 
         self.release_timer = QTimer()
-        self.release_timer.start(100)
-        self.release_timer.timeout.connect(self._release_keys)
+        self.release_timer.start(50)
+        self.release_timer.timeout.connect(self._process_keys)
 
-    def _release_keys(self):
+    def _process_keys(self):
         self.processmultikeys(self.keylist)
 
     def init_ui(self):
@@ -78,18 +78,21 @@ class KeyboardController(QWidget):
         """
         self.wheelchair = wheelchair
 
+    def _get_keyname(self, key):
+        if key == Qt.Key.Key_Up:
+            return "Up"
+        if key == Qt.Key.Key_Down:
+            return "Down"
+        if key == Qt.Key.Key_Left:
+            return "Left"
+        if key == Qt.Key.Key_Right:
+            return "Right"
+
     def keyPressEvent(self, event):
-        self.first_release = True
         self.keylist.append(event.key())
 
-    def keyReleaseEvent(self, _):
-        print("keyreleaseevent")
-        if self.first_release:
-            self.processmultikeys(self.keylist)
-
-        self.first_release = False
-
-        del self.keylist[-1]
+    def keyReleaseEvent(self, event):
+        self.keylist.remove(event.key())
 
     def processmultikeys(self, keyspressed):
         """Process multiple simultaneous keypresses.
