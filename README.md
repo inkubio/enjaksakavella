@@ -86,7 +86,7 @@ Using a laptop with linux and BLE-capable bluetooth
     For acceleration glasses:
         pip3 install phidget22
 
-        Additionally, install the libphidget22 library to /usr/lib, for example by following these compile instructions: https://www.phidgets.com/docs/OS_-_Linux#Source%20Install
+        Additionally, install the libphidget22 library to /usr/lib, for example by following these compile instructions: https://www.phidgets.com/docs/OS_-_Linux#Source%20Install . Remember to also add the udev-rule!
 
     Check that you get something like this with `pip3 list` and the setup should be done.
 
