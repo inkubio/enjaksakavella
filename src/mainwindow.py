@@ -20,6 +20,7 @@ from wheelchair_dummy import WheelchairDummy
 from wheelchair_bt import WheelchairBluetooth
 from controller_keyboard import KeyboardController
 from controller_eyetrack import EyeTrackerController
+from controller_accelerometer import AccelerometerController
 
 class MainWindow(QMainWindow):
     """Main window for wheelchair controller UI.
@@ -46,6 +47,7 @@ class MainWindow(QMainWindow):
         self.controllers = []
         self.controllers.append(KeyboardController)
         self.controllers.append(EyeTrackerController)
+        self.controllers.append(AccelerometerController)
 
         self.controller = self.controllers[0](self.wheelchair)
 

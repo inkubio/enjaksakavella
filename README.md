@@ -52,7 +52,7 @@ Using a laptop with linux and BLE-capable bluetooth
     When running the program, remember activate this virtual environment first by running the activate script.
   
 
-3. Install required python packages in virtual environment
+3. Install required software, with python packages in the virtual environment
 
     For Qt:
 
@@ -66,6 +66,14 @@ Using a laptop with linux and BLE-capable bluetooth
 
         sudo apt install python3-gi
 
+    For compiling python modules:
+
+        sudo apt install python3-dev
+
+    For Qt wayland support:
+        sudo apt install qtwayland5
+    
+
     Then install vext package to use python3-gi
 
         pip3 install vext --no-binary :all:
@@ -74,6 +82,11 @@ Using a laptop with linux and BLE-capable bluetooth
     For Eyetracker: (opencv-python also installs numpy)
 
         pip3 install opencv-python
+
+    For acceleration glasses:
+        pip3 install phidget22
+
+        Additionally, copy libphidget22.so from src/resources to /usr/lib/ and 99-libphidget22.rules to /etc/udev/rules.d, and after that log out and back in to use the added udev rules
 
     Check that you get something like this with `pip3 list` and the setup should be done.
 
