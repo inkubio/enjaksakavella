@@ -93,18 +93,20 @@ Using a laptop with linux and BLE-capable bluetooth
         (.venv) tuomas@blini:~/Ohjelmointi/enjaksakavella/src$ pip3 list
         Package          Version 
         ---------------- --------
-        numpy            1.18.2  
-        opencv-python    4.2.0.34
-        pip              18.1    
-        pkg-resources    0.0.0   
-        pydbus           0.6.0   
-        PySide2          5.14.2  
-        ruamel.yaml      0.16.10 
-        ruamel.yaml.clib 0.2.0   
-        setuptools       40.8.0  
-        shiboken2        5.14.2  
-        vext             0.7.3   
-        vext.gi          0.7.0 
+        numpy            1.22.3
+        opencv-python    4.5.5.64
+        Phidget22        1.10.20220211
+        pip              20.3.4
+        pkg-resources    0.0.0
+        pydbus           0.6.0
+        PySide2          5.15.2.1
+        ruamel.yaml      0.17.21
+        ruamel.yaml.clib 0.2.6
+        setuptools       44.1.1
+        shiboken2        5.15.2.1
+        vext             0.7.6
+        vext.gi          0.7.4
+
 
 ### Control the wheelchair
 1. Connect the electronics to RNET OMNI's port 1
